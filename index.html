@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spy Game</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #setup {
+            display: block;
+        }
+        #game {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+        }
+        #wordDisplay {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        button {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        #nextPlayerButton {
+            visibility: hidden;
+        }
+        #gameOver {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        #buttonContainer {
+            position: relative;
+            height: 40px;
+            margin-bottom: 20px;
+        }
+
+        #gameOver h2 {
+            margin-bottom: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div id="setup">
+        <h2>Spy Game Setup</h2>
+        <label for="numPlayers">Number of Players:</label>
+        <input type="number" id="numPlayers" min="2" value="4"><br><br>
+        <label for="numSpies">Number of Spies:</label>
+        <input type="number" id="numSpies" min="1" value="1"><br><br>
+        <button id="startGameButton">Start Game</button>
+    </div>
+
+    <div id="game">
+        <h2 id="playerTurn"></h2>
+        <div id="buttonContainer">
+            <button id="showWordButton">Show me the word</button>
+            <button id="nextPlayerButton">Next Player</button>
+        </div>
+        <div id="wordDisplay"></div>
+    </div>
+
+    <div id="gameOver">
+        <h2>Game Over!</h2>
+        <button id="playAgainButton">Play Again</button>
+    </div>
+
+    <script>
+        let players = [];
+        let currentPlayerIndex = 0;
+        let words = [ "Apple", "Banana", "Orange", "Grape", "Strawberry", "Watermelon", "Pineapple",
+            "Mango", "Peach", "Pear", "Carrot", "Potato", "Tomato", "Onion", "Lettuce",
+            "Broccoli", "Cucumber", "Pepper", "Spinach", "Corn", "Rose", "Sunflower",
+            "Gold", "Silver", "Iron", "Diamond", "Pearl", "Piano", "Guitar", "Star",
+            "Heart", "Sphere", "Rain", "Snow", "Water", "Coffee", "Beer", "Smoothie",
+            "Cake", "Donut", "Home", "School", "Hospital", "Church", "Store", "Office",
+            "Theater", "Museum", "Library", "Stadium", "Chair", "Table", "Bed", "Couch",
+            "Desk", "Phone", "Computer", "Television", "Camera", "Laptop", "Printer",
+            "Headphones", "Hammer", "Screwdriver", "Knife", "Shovel", "Scissors", "Car",
+            "Truck", "Bus", "Train", "Plane", "Boat", "Motorcycle", "Hand", "Foot", "Ball",
+            "Moon", "Black Hole", "Doctor", "Teacher", "Lawyer", "Chef", "Refrigerator",
+            "Oven", "Pepper", "Salt", "Garlic,", "Asia", "Africa", "Europe", "North America",
+            "South America", "Australia", "Antarctica", "Everest", "Gas", "Pencil", "Bag",
+            "Bottle", "Cup", "Bowl", "Basket", "Earthquake", "Tsunami", "Volcano", "Flood",
+            "Paint", "Canvas", "Brush", "Sculpture", "Eagle", "Vulture", "Dolphin", "Shark",
+            "Octopus", "Crab", "Jellyfish", "Seahorse", "Snake", "Lizard", "Turtle",
+            "Crocodile", "Frog", "Ant", "Bee", "Butterfly", "Spider", "Grasshopper", "Dog",
+            "Cat", "Horse", "Cow", "Pig", "Sheep", "Goat", "Lion", "Tiger", "Elephant",
+            "Animation", "Math", "Music", "Instagram", "YouTube", "Cloud", "Fire", "Mountain",
+            "Forest", "Bridge", "Clock", "Key", "Window", "Book", "Gift", "Party", "Dance",
+            "Song", "Dream", "Rainbow", "Shadow", "Mirror", "Feather", "Shell", "Stone",
+            "Leaf", "Travel", "Friend" ];
+        let currentGameWord = "";
+
+        document.getElementById('startGameButton').addEventListener('click', startGame);
+        document.getElementById('showWordButton').addEventListener('click', showWord);
+        document.getElementById('nextPlayerButton').addEventListener('click', nextPlayer);
+        document.getElementById('playAgainButton').addEventListener('click', playAgain);
+
+        function startGame() {
+            const numPlayers = parseInt(document.getElementById('numPlayers').value);
+            const numSpies = parseInt(document.getElementById('numSpies').value);
+
+            if (numSpies >= numPlayers) {
+                alert("Number of spies must be less than number of players.");
+                return;
+            }
+
+            players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                players.push({ isSpy: false });
+            }
+
+            let spyIndices = [];
+            while (spyIndices.length < numSpies) {
+                const randomIndex = Math.floor(Math.random() * numPlayers);
+                if (!spyIndices.includes(randomIndex)) {
+                    spyIndices.push(randomIndex);
+                    players[randomIndex].isSpy = true;
+                }
+            }
+            currentGameWord = words[Math.floor(Math.random() * words.length)];
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('gameOver').style.display = 'none';
+            currentPlayerIndex = 0;
+            updatePlayerTurn();
+        }
+
+        function showWord() {
+            const wordDisplay = document.getElementById('wordDisplay');
+            const currentPlayer = players[currentPlayerIndex];
+
+            if (currentPlayer.isSpy) {
+                wordDisplay.textContent = "You're a Spy";
+            } else {
+                wordDisplay.textContent = currentGameWord;
+            }
+
+            document.getElementById('showWordButton').style.visibility = 'hidden';
+            document.getElementById('nextPlayerButton').style.visibility = 'visible';
+        }
+
+        function nextPlayer() {
+            document.getElementById('wordDisplay').textContent = "";
+            currentPlayerIndex++;
+
+            if (currentPlayerIndex < players.length) {
+                updatePlayerTurn();
+                document.getElementById('showWordButton').style.visibility = 'visible';
+                document.getElementById('nextPlayerButton').style.visibility = 'hidden';
+            } else {
+                document.getElementById('game').style.display = 'none';
+                document.getElementById('gameOver').style.display = 'flex';
+            }
+        }
+
+        function updatePlayerTurn() {
+            document.getElementById('playerTurn').textContent = `Player ${currentPlayerIndex + 1}'s Turn`;
+        }
+        function playAgain(){
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('setup').style.display = 'block';
+            document.getElementById('game').style.display = 'none';
+            currentPlayerIndex = 0;
+            document.getElementById('wordDisplay').textContent = "";
+            document.getElementById('showWordButton').style.visibility = 'visible';
+            document.getElementById('nextPlayerButton').style.visibility = 'hidden';
+        }
+
+    </script>
+</body>
+</html>
