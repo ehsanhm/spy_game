@@ -59,6 +59,36 @@
         #gameOver h2 {
             margin-bottom: 120px;
         }
+
+    /* Media query for mobile devices */
+    @media (max-width: 600px) {
+    body {
+        padding: 1em; /* Adjust padding for smaller screens */
+
+    }
+    #wordDisplay {
+        font-size: 4em; /* Increase word display font size */
+        margin-top: 2em;
+        margin-bottom: 2em;
+    }
+    button {
+        padding: 1em 2em; /* Increase button padding */
+        font-size: 2em; /* Increase button font size */
+    }
+    #gameOver h2 {
+        font-size: 2em; /* Increase game over text size */
+    }
+    #setup h2 {
+        font-size: 2em; /* increase setup h2 size */
+    }
+    #setup input {
+        font-size: 2em; /* increase setup input size */
+        padding: 10px; /* increase setup input padding */
+    }
+    #setup label {
+        font-size: 2em; /* increase setup label size */
+    }
+    }
     </style>
 </head>
 <body>
@@ -153,7 +183,7 @@
             const currentPlayer = players[currentPlayerIndex];
 
             if (currentPlayer.isSpy) {
-                wordDisplay.textContent = "You're a Spy";
+                wordDisplay.textContent = "Spy";
             } else {
                 wordDisplay.textContent = currentGameWord;
             }
