@@ -6,94 +6,59 @@
         body {
             font-family: sans-serif;
             text-align: center;
-            padding: 20px;
+            padding: 1em;
+            font-size: 2em;
         }
         #setup {
             display: block;
+            font-size: 1.5em;
+        }
+        #setup input {
+            text-align: center;
+            font-size: 1em;
+            padding: 0.2em;
+            margin: 0.2em;
+            border-radius: 0.2lh;
+        }
+        #setup label {
+            font-size: 1em;
         }
         #game {
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             background-color: white;
         }
         #wordDisplay {
-            font-size: 2em;
-            margin-bottom: 20px;
+            margin-top: 2em;
+            margin-bottom: 2em;
         }
         button {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 0.5em;
+            font-size: 1.5em;
             cursor: pointer;
+            border-radius: 0.5lh;
         }
         #nextPlayerButton {
-            visibility: hidden;
+            display: none;
         }
         #gameOver {
             display: none;
-            flex-direction: column;
             justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
         }
         #buttonContainer {
-            position: relative;
-            height: 40px;
-            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
         }
 
-        #gameOver h2 {
-            margin-bottom: 120px;
-        }
-
-    /* Media query for mobile devices */
-    @media (max-width: 600px) {
-    body {
-        padding: 1em; /* Adjust padding for smaller screens */
-
-    }
-    #wordDisplay {
-        font-size: 4em; /* Increase word display font size */
-        margin-top: 2em;
-        margin-bottom: 2em;
-    }
-    button {
-        padding: 1em 2em; /* Increase button padding */
-        font-size: 2em; /* Increase button font size */
-    }
-    #gameOver h2 {
-        font-size: 2em; /* Increase game over text size */
-    }
-    #setup h2 {
-        font-size: 2em; /* increase setup h2 size */
-    }
-    #setup input {
-        font-size: 2em; /* increase setup input size */
-        padding: 10px; /* increase setup input padding */
-    }
-    #setup label {
-        font-size: 2em; /* increase setup label size */
-    }
-    }
     </style>
 </head>
 <body>
+    <h1>Spy Game</h1>
     <div id="setup">
-        <h2>Spy Game Setup</h2>
         <label for="numPlayers">Number of Players:</label>
         <input type="number" id="numPlayers" min="2" value="4"><br><br>
         <label for="numSpies">Number of Spies:</label>
@@ -102,16 +67,14 @@
     </div>
 
     <div id="game">
-        <h2 id="playerTurn"></h2>
         <div id="buttonContainer">
             <button id="showWordButton">Show me the word</button>
-            <button id="nextPlayerButton">Next Player</button>
+            <button id="nextPlayerButton">I saw</button>
         </div>
         <div id="wordDisplay"></div>
     </div>
 
     <div id="gameOver">
-        <h2>Game Over!</h2>
         <button id="playAgainButton">Play Again</button>
     </div>
 
@@ -175,7 +138,6 @@
             document.getElementById('game').style.display = 'block';
             document.getElementById('gameOver').style.display = 'none';
             currentPlayerIndex = 0;
-            updatePlayerTurn();
         }
 
         function showWord() {
@@ -183,13 +145,13 @@
             const currentPlayer = players[currentPlayerIndex];
 
             if (currentPlayer.isSpy) {
-                wordDisplay.textContent = "Spy";
+                wordDisplay.textContent = "You're the spy!";
             } else {
                 wordDisplay.textContent = currentGameWord;
             }
 
-            document.getElementById('showWordButton').style.visibility = 'hidden';
-            document.getElementById('nextPlayerButton').style.visibility = 'visible';
+            document.getElementById('showWordButton').style.display = 'none';
+            document.getElementById('nextPlayerButton').style.display = 'flex';
         }
 
         function nextPlayer() {
@@ -197,26 +159,22 @@
             currentPlayerIndex++;
 
             if (currentPlayerIndex < players.length) {
-                updatePlayerTurn();
-                document.getElementById('showWordButton').style.visibility = 'visible';
-                document.getElementById('nextPlayerButton').style.visibility = 'hidden';
+                document.getElementById('showWordButton').style.display = 'flex';
+                document.getElementById('nextPlayerButton').style.display = 'none';
             } else {
                 document.getElementById('game').style.display = 'none';
                 document.getElementById('gameOver').style.display = 'flex';
             }
         }
 
-        function updatePlayerTurn() {
-            document.getElementById('playerTurn').textContent = `Player ${currentPlayerIndex + 1}'s Turn`;
-        }
         function playAgain(){
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('setup').style.display = 'block';
             document.getElementById('game').style.display = 'none';
             currentPlayerIndex = 0;
             document.getElementById('wordDisplay').textContent = "";
-            document.getElementById('showWordButton').style.visibility = 'visible';
-            document.getElementById('nextPlayerButton').style.visibility = 'hidden';
+            document.getElementById('showWordButton').style.display = 'flex';
+            document.getElementById('nextPlayerButton').style.display = 'none';
         }
 
     </script>
