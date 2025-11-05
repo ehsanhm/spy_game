@@ -1,58 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spy Game</title>
     <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            padding: 1em;
-            font-size: 2em;
+        * {
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center;
+            padding: 5vw;
+            margin: 0;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            font-size: 5vw;
+        }
+        
+        h1 {
+            font-size: 10vw;
+            margin: 2vh 0 4vh 0;
+            color: #333;
+        }
+        
         #setup {
             display: block;
-            font-size: 1.5em;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 5vw;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        #setup input {
-            text-align: center;
-            font-size: 1em;
-            padding: 0.2em;
-            margin: 0.2em;
-            border-radius: 0.2lh;
-        }
+        
         #setup label {
-            font-size: 1em;
+            display: block;
+            font-size: 6vw;
+            margin-bottom: 3vh;
+            color: #555;
+            font-weight: 500;
         }
+        
+        #setup input {
+            width: 100%;
+            max-width: 200px;
+            text-align: center;
+            font-size: 8vw;
+            padding: 3vh 4vw;
+            margin: 2vh auto 4vh auto;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            display: block;
+            background: #fafafa;
+        }
+        
+        button {
+            width: 100%;
+            max-width: 400px;
+            padding: 4vh 6vw;
+            font-size: 6vw;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin: 2vh auto;
+            display: block;
+            text-align: center;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+        
         #game {
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             width: 100%;
-            height: 100%;
+            min-height: 80vh;
             background-color: white;
+            border-radius: 15px;
+            padding: 5vw;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
         #wordDisplay {
-            margin-top: 2em;
-            margin-bottom: 2em;
-            font-size: 2em;
+            margin: 6vh 0;
+            font-size: 10vw;
+            font-weight: bold;
+            color: #333;
+            min-height: 15vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4vh;
+            background: #f8f8f8;
+            border-radius: 12px;
+            width: 100%;
         }
-        button {
-            padding: 0.5em;
-            font-size: 2.5em;
-            cursor: pointer;
-            border-radius: 0.5lh;
+        
+        #showWordButton {
+            justify-content: center;
+            align-items: center;
         }
+        
         #nextPlayerButton {
             display: none;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            justify-content: center;
+            align-items: center;
         }
+        
         #gameOver {
             display: none;
             justify-content: center;
+            align-items: center;
+            padding: 5vw;
         }
+        
         #buttonContainer {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            width: 100%;
+            gap: 2vh;
+        }
+        
+        #playAgainButton {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
 
     </style>
@@ -61,9 +142,7 @@
     <h1>Spy Game</h1>
     <div id="setup">
         <label for="numPlayers">Number of Players:</label>
-        <input type="number" id="numPlayers" min="2" value="4"><br><br>
-        <label for="numSpies">Number of Spies:</label>
-        <input type="number" id="numSpies" min="1" value="1"><br><br>
+        <input type="number" id="numPlayers" min="2" value="4">
         <button id="startGameButton">Start Game</button>
     </div>
 
@@ -82,28 +161,214 @@
     <script>
         let players = [];
         let currentPlayerIndex = 0;
-        let words = [ "Apple", "Banana", "Orange", "Grape", "Strawberry", "Watermelon", "Pineapple",
-            "Mango", "Peach", "Pear", "Carrot", "Potato", "Tomato", "Onion", "Lettuce",
-            "Broccoli", "Cucumber", "Pepper", "Spinach", "Corn", "Rose", "Sunflower",
-            "Gold", "Silver", "Iron", "Diamond", "Pearl", "Piano", "Guitar", "Star",
-            "Heart", "Sphere", "Rain", "Snow", "Water", "Coffee", "Beer", "Smoothie",
-            "Cake", "Donut", "Home", "School", "Hospital", "Church", "Store", "Office",
-            "Theater", "Museum", "Library", "Stadium", "Chair", "Table", "Bed", "Couch",
-            "Desk", "Phone", "Computer", "Television", "Camera", "Laptop", "Printer",
-            "Headphones", "Hammer", "Screwdriver", "Knife", "Shovel", "Scissors", "Car",
-            "Truck", "Bus", "Train", "Plane", "Boat", "Motorcycle", "Hand", "Foot", "Ball",
-            "Moon", "Black Hole", "Doctor", "Teacher", "Lawyer", "Chef", "Refrigerator",
-            "Oven", "Pepper", "Salt", "Garlic,", "Asia", "Africa", "Europe", "North America",
-            "South America", "Australia", "Antarctica", "Everest", "Gas", "Pencil", "Bag",
-            "Bottle", "Cup", "Bowl", "Basket", "Earthquake", "Tsunami", "Volcano", "Flood",
-            "Paint", "Canvas", "Brush", "Sculpture", "Eagle", "Vulture", "Dolphin", "Shark",
-            "Octopus", "Crab", "Jellyfish", "Seahorse", "Snake", "Lizard", "Turtle",
-            "Crocodile", "Frog", "Ant", "Bee", "Butterfly", "Spider", "Grasshopper", "Dog",
-            "Cat", "Horse", "Cow", "Pig", "Sheep", "Goat", "Lion", "Tiger", "Elephant",
-            "Animation", "Math", "Music", "Instagram", "YouTube", "Cloud", "Fire", "Mountain",
-            "Forest", "Bridge", "Clock", "Key", "Window", "Book", "Gift", "Party", "Dance",
-            "Song", "Dream", "Rainbow", "Shadow", "Mirror", "Feather", "Shell", "Stone",
-            "Leaf", "Travel", "Friend" ];
+        let words = [
+            // Fruits & Vegetables
+            "Apple", "Banana", "Orange", "Grape", "Strawberry", "Watermelon", "Pineapple",
+            "Mango", "Peach", "Pear", "Lemon", "Lime", "Cherry", "Blueberry", "Coconut",
+            "Kiwi", "Melon", "Plum", "Pumpkin", "Cabbage", "Carrot", "Potato", "Tomato",
+            "Onion", "Lettuce", "Broccoli", "Cucumber", "Pepper", "Spinach", "Corn", "Mushroom",
+            
+            // Food & Drinks
+            "Bread", "Cheese", "Pizza", "Burger", "Sandwich", "Ice Cream", "Chocolate", "Cookie",
+            "Honey", "Butter", "Milk", "Egg", "Rice", "Pasta", "Soup", "Salad", "Pancake",
+            "Waffle", "Sushi", "Taco", "Noodles", "Popcorn", "Candy", "Gum", "Cake", "Donut",
+            "Bacon", "Sausage", "Ham", "Turkey", "Salmon", "Tuna", "Shrimp", "Lobster", "Steak",
+            "Pork", "Lamb", "Beef", "Yogurt", "Cream", "Bagel", "Muffin", "Brownie", "Cupcake",
+            "Pie", "Pudding", "Cheesecake", "Pretzel", "Cracker", "Chip", "Burrito", "Ramen",
+            "Dumpling", "Ketchup", "Mustard", "Tea", "Lemonade", "Soda", "Juice", "Milkshake",
+            "Wine", "Hot Chocolate", "Coffee", "Beer", "Water", "Peanut", "Almond", "Walnut", "Cashew",
+            
+            // Animals
+            "Dog", "Cat", "Horse", "Cow", "Pig", "Sheep", "Goat", "Lion", "Tiger", "Elephant",
+            "Penguin", "Polar Bear", "Seal", "Deer", "Camel", "Kangaroo", "Koala", "Raccoon",
+            "Squirrel", "Skunk", "Fox", "Wolf", "Cheetah", "Leopard", "Panther", "Panda", "Bat",
+            "Whale", "Baby Dolphin", "Baby Seahorse", "Starfish", "Fish", "Goldfish", "Octopus",
+            "Crab", "Seahorse", "Snake", "Lizard", "Turtle", "Crocodile", "Frog", "Ant", "Bee",
+            "Butterfly", "Spider", "Eagle", "Dolphin", "Shark", "Parrot", "Sparrow", "Crow",
+            "Flamingo", "Seagull", "Duck", "Goose", "Swan", "Chicken", "Rooster", "Hen", "Owl",
+            "Pigeon", "Peacock", "Baby Penguin",
+            
+            // Fantasy & Characters
+            "Phoenix", "Dragon", "Unicorn", "Mermaid", "Giant", "Bigfoot", "Godzilla", "King Kong",
+            "Frankenstein", "Dracula", "Vampire", "Zombie", "Ghost", "Troll", "Elf", "Fairy",
+            "Wizard", "Witch", "Knight", "Ninja", "Pirate", "Cowboy", "Angel", "Devil",
+            
+            // Famous People & Characters
+            "Einstein", "Mozart", "Taylor Swift", "Harry Potter", "Spider Man", "Batman",
+            "Superman", "Mickey Mouse",
+            
+            // Nature & Places
+            "Sun", "Ocean", "Lake", "Beach", "River", "Mountain", "Forest", "Desert", "Island",
+            "Jungle", "Summer", "Winter", "Spring", "Fall", "Morning", "Night", "Moon", "Wind",
+            "Storm", "Lightning", "Thunder", "Sunset", "Sunrise", "Sky", "Grass", "Flower", "Tree",
+            "Rock", "Sand", "Dirt", "Seed", "Root", "Branch", "Road", "Street", "City", "Village",
+            "Town", "Country", "Farm", "Garden", "Park", "Zoo", "Playground", "Pool", "Planet",
+            
+            // Buildings & Places
+            "Home", "School", "Hospital", "Church", "Store", "Office", "Theater", "Museum",
+            "Library", "Stadium", "House", "Room", "Door", "Roof", "Wall", "Floor", "Stairs",
+            "Elevator", "Garage", "Kitchen", "Bathroom", "Bedroom", "Gym", "Salon", "Barber",
+            "Dentist", "Airport", "Station", "Highway", "Corner", "Parking", "Entrance", "Exit",
+            "Gate", "Fence", "Yard", "Lawn", "Pond", "Bench", "Swing", "Slide", "Sandbox",
+            "Restaurant", "Cafe", "Bar", "Bakery", "Mall", "Market", "Shop", "Bank",
+            
+            // Furniture & Household
+            "Chair", "Table", "Bed", "Couch", "Desk", "Closet", "Shelf", "Drawer", "Carpet",
+            "Curtain", "Blanket", "Sheet", "Pillow", "Lamp", "Light", "Fan", "Heater",
+            "Air Conditioner", "Remote", "Microwave", "Stove", "Dishwasher", "Sink", "Counter",
+            "Cupboard", "Fridge", "Freezer", "Lightbulb", "Fireplace", "Statue", "Tower",
+            "Castle", "Pyramid", "Tunnel",
+            
+            // Objects & Items
+            "Phone", "Computer", "Television", "Camera", "Laptop", "Printer", "Headphones",
+            "Hammer", "Screwdriver", "Knife", "Shovel", "Scissors", "Car", "Truck", "Bus",
+            "Train", "Plane", "Boat", "Motorcycle", "Hand", "Foot", "Ball", "Black Hole",
+            "Refrigerator", "Oven", "Salt", "Garlic", "Gas", "Pencil", "Basket", "Paint",
+            "Battery", "Charger", "Cable", "Wire", "Plug", "Switch", "Button", "Screen",
+            "Keyboard", "Mouse", "Speaker", "Microphone", "Radio", "Alarm", "Calendar",
+            "Notebook", "Pen", "Eraser", "Ruler", "Tape", "Glue", "Stapler", "Paper",
+            "Envelope", "Stamp", "Letter", "Card", "Photo", "Picture", "Frame", "Poster",
+            "Map", "Flag", "Crown", "Ring", "Necklace", "Bracelet", "Watch", "Glasses",
+            "Hat", "Cap", "Scarf", "Tie", "Belt", "Shoe", "Sock", "Candle", "Passport",
+            "Rocket", "Jacket", "Umbrella", "Sunglasses", "Backpack", "Suitcase", "Balloon",
+            "Kite", "Puzzle", "Dice", "Chess", "Drum", "Violin", "Flute",
+            
+            // Clothing
+            "Shirt", "Pants", "Dress", "Skirt", "Sweater", "Coat", "Shorts", "Jeans",
+            "T-Shirt", "Hoodie", "Sandals", "Boots", "Sneakers", "Slippers", "Pajamas",
+            "Swimsuit", "Glove", "Mitten", "Mask", "Costume", "Uniform", "Apron", "Towel",
+            "Soap", "Shampoo", "Toothbrush", "Toothpaste", "Comb", "Brush", "Mirror", "Perfume",
+            "Lipstick", "Makeup", "Bandage", "Medicine", "Pill", "Vitamin", "Tissue", "Cotton",
+            "Sponge", "Bucket", "Broom", "Vacuum", "Trash", "Recycling", "Bag", "Box",
+            "Container", "Jar", "Can", "Bottle", "Glass", "Plate", "Bowl", "Spoon", "Fork",
+            "Chopsticks", "Straw", "Napkin", "Tray", "Pot", "Pan", "Kettle", "Toaster",
+            "Blender", "Mixer",
+            
+            // Famous Landmarks
+            "Eiffel Tower", "Statue of Liberty", "Big Ben", "Great Wall of China",
+            "Pyramids of Egypt", "Taj Mahal", "Niagara Falls", "Grand Canyon", "Times Square",
+            "White House", "Hollywood", "Disneyland", "Las Vegas",
+            
+            // Cities
+            "London", "Paris", "Rome", "Tokyo", "New York", "Barcelona", "Amsterdam", "Venice",
+            "Athens", "Istanbul",
+            
+            // Colors
+            "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown", "Black",
+            "White", "Gray",
+            
+            // Family & People
+            "Baby", "Child", "Teenager", "Adult", "Boy", "Girl", "Man", "Woman", "Father",
+            "Mother", "Dad", "Mom", "Brother", "Sister", "Son", "Daughter", "Uncle", "Aunt",
+            "Cousin", "Grandma", "Grandpa", "Husband", "Wife",
+            
+            // Body Parts
+            "Eye", "Ear", "Nose", "Mouth", "Tooth", "Lip", "Head", "Hair", "Face", "Neck",
+            "Shoulder", "Arm", "Finger", "Thumb", "Leg", "Knee", "Toe", "Chest", "Back",
+            "Stomach", "Skin", "Bone", "Blood", "Brain",
+            
+            // Shapes (Tangible)
+            "Circle", "Square", "Triangle", "Diamond", "Star",
+            
+            // Tangible Adjectives (Physical Properties)
+            "Hot", "Cold", "Warm", "Cool", "Wet", "Dry", "Clean", "Dirty", "Hard", "Soft", "Sharp",
+            
+            // Holidays & Events (Concrete)
+            "Birthday", "Christmas", "Easter", "Halloween", "Thanksgiving", "Wedding",
+            
+            // More Animals
+            "Rabbit", "Mouse", "Rat", "Hamster", "Guinea Pig", "Donkey", "Zebra", "Giraffe",
+            "Hippo", "Rhino", "Gorilla", "Monkey", "Bear", "Wolf", "Alligator", "Snail",
+            "Worm", "Ladybug", "Dragonfly", "Mosquito", "Cockroach", "Caterpillar",
+            
+            // Professions & People
+            "Nurse", "Firefighter", "Police Officer", "Pilot", "Sailor", "Farmer", "Waiter",
+            "Waitress", "Cashier", "Mechanic", "Builder", "Painter", "Singer", "Dancer",
+            "Driver", "Mailman", "Guard", "Photographer",
+            
+            // More Food
+            "Carrot Cake", "Donut Hole", "French Fries", "Onion Rings", "Chicken Wings",
+            "Meatball", "Hot Dog", "Corn Dog", "Apple Pie", "Lemon Pie", "Jelly", "Jam",
+            "Peanut Butter", "Syrup", "Gravy", "Sauce", "Pickles", "Olive", "Cucumber Salad",
+            
+            // More Household Items
+            "Vase", "Candle Holder", "Picture Frame", "Cushion", "Rug", "Mat", "Doormat",
+            "Doorbell", "Mailbox", "Birdhouse", "Flower Pot", "Watering Can", "Garden Hose",
+            "Ladder", "Toolbox", "Flashlight", "Lantern", "Matches", "Lighter",
+            
+            // More Clothing & Accessories
+            "Slippers", "Flip Flops", "High Heels", "Raincoat", "Poncho", "Vest", "Suit",
+            "Tie Clip", "Hair Band", "Headband", "Earrings", "Necklace Chain", "Purse Strap",
+            
+            // Money & Shopping (Tangible)
+            "Money", "Dollar", "Coin", "Cash", "Wallet", "Purse", "ATM", "Shopping",
+            
+            // Sports & Activities
+            "Football", "Basketball", "Tennis", "Baseball", "Soccer", "Swimming", "Running",
+            "Cycling", "Skateboard", "Roller Skates", "Snowboard", "Surfboard", "Fishing",
+            "Camping", "Hiking", "Painting", "Drawing", "Reading", "Writing", "Singing",
+            "Dancing", "Cooking", "Goal", "Net", "Bat", "Trophy", "Medal", "Prize", "Winner",
+            "Loser", "Team", "Player", "Coach", "Fan", "Crowd",
+            
+            // Entertainment & Media (Tangible)
+            "Music", "Instagram", "YouTube", "Bridge", "Clock", "Key", "Window", "Book",
+            "Gift", "Party", "Rainbow", "Feather", "Shell", "Stone", "Leaf", "Concert",
+            "Show", "Stage", "Movie", "Actor", "Actress", "Video", "Game", "Puzzle",
+            "Toy", "Doll", "Bear", "Robot", "Block", "Lego", "Yo-Yo", "Frisbee", "Jump Rope",
+            "Cards", "Video Game",
+            
+            // More Everyday Items
+            "Straw Hat", "Baseball Cap", "Beanie", "Sunhat", "Bookmark", "Keychain", "Magnet",
+            "Sticker", "Badge", "Button Pin", "Ziplock Bag", "Sandwich Bag", "Lunch Box",
+            "Water Bottle", "Coffee Mug", "Tea Cup", "Drinking Straw", "Ice Cube", "Teapot",
+            "Salt Shaker", "Pepper Mill", "Sugar Bowl", "Bread Basket", "Fruit Bowl",
+            
+            // Musical Instruments
+            "Trumpet", "Saxophone", "Harmonica", "Accordion", "Banjo", "Ukulele", "Harp",
+            "Xylophone", "Tambourine", "Maracas", "Bongo", "Cymbals",
+            
+            // Tools & Workshop
+            "Wrench", "Pliers", "Drill", "Saw", "Nail", "Screw", "Bolt", "Nut",
+            "Sandpaper", "Paint Brush", "Paint Roller", "Measuring Tape", "Level",
+            
+            // Safety & Law (Tangible)
+            "Police", "Firefighter", "Ambulance", "Fire Truck", "Police Car", "Handcuffs",
+            "Siren", "Alarm", "Bell", "Whistle",
+            
+            // Weapons & Military (Tangible)
+            "Sword", "Shield", "Bow", "Arrow", "Gun", "Bomb", "Soldier", "Army", "Captain",
+            "Tank", "Jet Fighter", "Battleship", "Helicopter", "Uniform", "Helmet", "Medal",
+            
+            // More Kitchen Items
+            "Cutting Board", "Can Opener", "Bottle Opener", "Corkscrew", "Peeler", "Grater",
+            "Whisk", "Ladle", "Spatula", "Tongs", "Oven Mitt", "Apron", "Dish Soap",
+            "Sponge", "Dish Towel", "Pot Holder", "Rolling Pin", "Cookie Cutter", "Strainer",
+            
+            // Office & School Supplies
+            "Pencil Case", "Eraser", "Sharpener", "Highlighter", "Marker", "Whiteboard",
+            "Blackboard", "Chalk", "Calculator", "Staple", "Paper Clip", "Binder", "Folder",
+            "File Cabinet", "Desk Lamp", "Desk Chair", "Bulletin Board", "Pushpin",
+            
+            // Sports Equipment
+            "Baseball Glove", "Baseball Bat", "Basketball Hoop", "Soccer Ball", "Tennis Ball",
+            "Tennis Racket", "Golf Club", "Golf Ball", "Bowling Ball", "Bowling Pin",
+            "Hockey Stick", "Hockey Puck", "Volleyball", "Badminton Racket", "Shuttlecock",
+            
+            // Geography (Tangible)
+            "Asia", "Africa", "Europe", "North America", "South America", "Australia",
+            "Antarctica", "Everest", "Volcano",
+            
+            // Transportation & Vehicles
+            "Bicycle", "Tricycle", "Scooter", "Subway", "Taxi", "Ambulance", "Fire Truck",
+            "Garbage Truck", "Tow Truck", "Van", "Jeep", "Convertible", "Pickup Truck",
+            "RV", "Camper", "Trailer", "Yacht", "Sailboat", "Canoe", "Kayak", "Rowboat",
+            "Jet Ski", "Hot Air Balloon", "Glider", "Parachute",
+            
+            // Garden & Outdoor
+            "Shovel", "Rake", "Hoe", "Wheelbarrow", "Lawn Mower", "Sprinkler", "BBQ Grill",
+            "Picnic Table", "Hammock", "Tent", "Sleeping Bag", "Camping Chair", "Cooler",
+            "Thermos", "Compass", "Binoculars", "Telescope"
+        ];
         let currentGameWord = "";
 
         document.getElementById('startGameButton').addEventListener('click', startGame);
@@ -111,14 +376,34 @@
         document.getElementById('nextPlayerButton').addEventListener('click', nextPlayer);
         document.getElementById('playAgainButton').addEventListener('click', playAgain);
 
+        function getRandomSpyCount(numPlayers) {
+            // Generate a weighted random percentage mostly around 30%, but can go up to 90%
+            // Use average of multiple random numbers to create normal distribution
+            let sum = 0;
+            const samples = 3;
+            for (let i = 0; i < samples; i++) {
+                sum += Math.random();
+            }
+            let avgRandom = sum / samples; // This tends towards 0.5 (50%)
+            
+            // Scale and shift to center around 30% with range from 10% to 90%
+            // Formula: shift avgRandom (0-1) to center at 30% with wider range
+            let spyPercentage = 0.10 + (avgRandom * 0.80); // 10% to 90%
+            
+            // Bias towards 30% by blending with target
+            spyPercentage = (spyPercentage * 0.7) + (0.30 * 0.3); // 70% random, 30% fixed at 30%
+            
+            // Calculate number of spies, minimum 1
+            let numSpies = Math.round(numPlayers * spyPercentage);
+            numSpies = Math.max(1, numSpies); // At least 1 spy
+            numSpies = Math.min(numSpies, Math.floor(numPlayers * 0.9)); // Max 90% of players
+            
+            return numSpies;
+        }
+
         function startGame() {
             const numPlayers = parseInt(document.getElementById('numPlayers').value);
-            const numSpies = parseInt(document.getElementById('numSpies').value);
-
-            if (numSpies >= numPlayers) {
-                alert("Number of spies must be less than number of players.");
-                return;
-            }
+            const numSpies = getRandomSpyCount(numPlayers);
 
             players = [];
             for (let i = 0; i < numPlayers; i++) {
