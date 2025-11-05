@@ -135,6 +135,13 @@
         #playAgainButton {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
+        
+        #gameCounter {
+            margin-top: 3vh;
+            font-size: 4vw;
+            color: #888;
+            text-align: center;
+        }
 
     </style>
 </head>
@@ -144,6 +151,7 @@
         <label for="numPlayers">Number of Players:</label>
         <input type="number" id="numPlayers" min="2" value="4">
         <button id="startGameButton">Start Game</button>
+        <div id="gameCounter">Games Played Worldwide: Loading...</div>
     </div>
 
     <div id="game">
@@ -371,6 +379,31 @@
         ];
         let currentGameWord = "";
 
+        // Global counter using CountAPI
+        async function updateGlobalCounter() {
+            try {
+                const response = await fetch('https://api.countapi.xyz/get/spygame-global/plays');
+                const data = await response.json();
+                document.getElementById('gameCounter').textContent = `Games Played Worldwide: ${data.value.toLocaleString()}`;
+            } catch (error) {
+                console.error('Failed to fetch counter:', error);
+                document.getElementById('gameCounter').textContent = 'Games Played Worldwide: Loading...';
+            }
+        }
+
+        async function incrementGlobalCounter() {
+            try {
+                const response = await fetch('https://api.countapi.xyz/hit/spygame-global/plays');
+                const data = await response.json();
+                document.getElementById('gameCounter').textContent = `Games Played Worldwide: ${data.value.toLocaleString()}`;
+            } catch (error) {
+                console.error('Failed to increment counter:', error);
+            }
+        }
+
+        // Load counter when page loads
+        window.addEventListener('load', updateGlobalCounter);
+
         document.getElementById('startGameButton').addEventListener('click', startGame);
         document.getElementById('showWordButton').addEventListener('click', showWord);
         document.getElementById('nextPlayerButton').addEventListener('click', nextPlayer);
@@ -404,6 +437,9 @@
         function startGame() {
             const numPlayers = parseInt(document.getElementById('numPlayers').value);
             const numSpies = getRandomSpyCount(numPlayers);
+
+            // Increment global counter
+            incrementGlobalCounter();
 
             players = [];
             for (let i = 0; i < numPlayers; i++) {
