@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spy Game</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <style>
         * {
@@ -25,6 +29,37 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+        }
+
+        /* RTL Support for Farsi */
+        body.rtl {
+            direction: rtl;
+            font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* Language Toggle Button */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 4vw;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            z-index: 4000;
+        }
+
+        .language-toggle:active {
+            transform: scale(0.98);
         }
         
         h1 {
@@ -87,6 +122,14 @@
         button:active {
             transform: scale(0.98);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-secondary:active {
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);
         }
         
         #game {
@@ -156,6 +199,154 @@
             text-align: center;
         }
 
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s ease;
+            margin: 50px auto;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: white;
+            font-size: 6vw;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 8vw;
+            width: 10vw;
+            height: 10vw;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .close-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        .modal-body {
+            padding: 30px;
+            font-size: 4.5vw;
+        }
+
+        .modal-body h3 {
+            color: #1a1a2e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 6vw;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .modal-body ul {
+            color: #666;
+            line-height: 2;
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        body.rtl .modal-body ul {
+            padding-left: 0;
+            padding-right: 25px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 4.5vw;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            text-align: left;
+        }
+
+        body.rtl .form-label {
+            text-align: right;
+        }
+
+        #feedbackStatus {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
         /* Desktop and Tablet Styles */
         @media (min-width: 768px) {
             body {
@@ -166,6 +357,16 @@
             h1 {
                 font-size: 48px;
                 margin: 20px 0 30px 0;
+            }
+
+            .language-toggle {
+                font-size: 0.9em;
+                padding: 10px 20px;
+            }
+
+            .language-toggle:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
             }
             
             #setup {
@@ -223,35 +424,125 @@
                 margin-top: 20px;
                 font-size: 16px;
             }
+
+            .modal-header h2 {
+                font-size: 1.5em;
+            }
+
+            .close-btn {
+                font-size: 1.5em;
+                width: 40px;
+                height: 40px;
+            }
+
+            .close-btn:hover {
+                transform: rotate(90deg);
+            }
+
+            .modal-body {
+                font-size: 16px;
+            }
+
+            .modal-body h3 {
+                font-size: 1.3em;
+            }
+
+            .form-input {
+                font-size: 1em;
+            }
         }
 
     </style>
 </head>
 <body>
-    <h1>Spy Game</h1>
+    <!-- Language Toggle Button -->
+    <button class="language-toggle" onclick="toggleLanguage()">
+        <span id="langButtonText">فارسی</span>
+    </button>
+
+    <h1 id="mainTitle">Spy Game</h1>
     <div id="setup">
-        <label for="numPlayers">Number of Players:</label>
-        <input type="number" id="numPlayers" min="2" value="4">
+        <label for="numPlayers" id="playerLabel">Number of Players:</label>
+        <input type="number" id="numPlayers" min="3" value="4">
         <button id="startGameButton">Start Game</button>
+        <button class="btn-secondary" onclick="showHelp()">
+            <span id="howToPlayBtn">📖 How to Play</span>
+        </button>
+        <button class="btn-secondary" onclick="showFeedback()">
+            <span id="feedbackBtn">💬 Feedback</span>
+        </button>
         <div id="gameCounter">Games Played Worldwide: Loading...</div>
     </div>
 
     <div id="game">
         <div id="buttonContainer">
-            <button id="showWordButton">Show me the word</button>
-            <button id="nextPlayerButton">I saw</button>
+            <button id="showWordButton"><span id="showWordText">Show me the word</span></button>
+            <button id="nextPlayerButton"><span id="nextPlayerText">I saw</span></button>
         </div>
         <div id="wordDisplay"></div>
     </div>
 
     <div id="gameOver">
-        <button id="playAgainButton">Play Again</button>
+        <button id="playAgainButton"><span id="playAgainText">Play Again</span></button>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="helpTitle">📖 How to Play - Spy Game</h2>
+                <button class="close-btn" onclick="closeHelp()">✕</button>
+            </div>
+            <div class="modal-body" id="helpContent">
+                <!-- Content will be populated by JavaScript based on language -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="feedbackTitle">💬 Send Feedback</h2>
+                <button class="close-btn" onclick="closeFeedback()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="feedbackIntro" style="color: #666; margin-bottom: 20px;">Have questions, suggestions, or ideas to improve the game? We'd love to hear from you!</p>
+                
+                <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackName" id="nameLabel" class="form-label">Name (Optional)</label>
+                        <input type="text" id="feedbackName" placeholder="Your name" class="form-input">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackEmail" id="emailLabel" class="form-label">Email (Optional)</label>
+                        <input type="email" id="feedbackEmail" placeholder="your.email@example.com" class="form-input">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackMessage" id="messageLabel" class="form-label">Message *</label>
+                        <textarea id="feedbackMessage" required placeholder="Share your thoughts..." 
+                                  style="width: 100%; min-height: 150px; resize: vertical;" class="form-input"></textarea>
+                    </div>
+                    
+                    <p id="feedbackStatus" class="hidden"></p>
+                    
+                    <button type="submit" id="submitFeedbackBtn">
+                        <span id="sendBtn">📤 Send Feedback</span>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
         let players = [];
         let currentPlayerIndex = 0;
-        let words = [
+        let currentWordIndex = -1; // Track the index of the current word
+        
+        const wordsDatabase = {
+            en: [
             // Fruits & Vegetables
             "Apple", "Banana", "Orange", "Grape", "Strawberry", "Watermelon", "Pineapple",
             "Mango", "Peach", "Pear", "Lemon", "Lime", "Cherry", "Blueberry", "Coconut",
@@ -458,11 +749,219 @@
             "Shovel", "Rake", "Hoe", "Wheelbarrow", "Lawn Mower", "Sprinkler", "BBQ Grill",
             "Picnic Table", "Hammock", "Tent", "Sleeping Bag", "Camping Chair", "Cooler",
             "Thermos", "Compass", "Binoculars", "Telescope"
-        ];
+        ],
+        fa: [
+            // میوه‌ها و سبزیجات
+            "سیب", "موز", "پرتقال", "انگور", "توت‌فرنگی", "هندوانه", "آناناس",
+            "انبه", "هلو", "گلابی", "لیمو", "لیمو ترش", "گیلاس", "بلوبری", "نارگیل",
+            "کیوی", "خربزه", "آلو", "کدو", "کلم", "هویج", "سیب‌زمینی", "گوجه‌فرنگی",
+            "پیاز", "کاهو", "کلم‌بروکلی", "خیار", "فلفل", "اسفناج", "ذرت", "قارچ",
+            
+            // غذا و نوشیدنی
+            "نان", "پنیر", "پیتزا", "همبرگر", "ساندویچ", "بستنی", "شکلات", "کلوچه",
+            "عسل", "کره", "شیر", "تخم‌مرغ", "برنج", "ماکارونی", "سوپ", "سالاد", "پنکیک",
+            "وافل", "سوشی", "تاکو", "نودل", "پاپ‌کورن", "آب‌نبات", "آدامس", "کیک", "دونات",
+            "بیکن", "سوسیس", "ژامبون", "بوقلمون", "ماهی قزل‌آلا", "ماهی تن", "میگو", "خرچنگ بزرگ", "استیک",
+            "گوشت خوک", "گوشت بره", "گوشت گاو", "ماست", "خامه", "نان‌گرد", "کیک یزدی", "براونی", "کیک فنجانی",
+            "پای", "پودینگ", "چیزکیک", "چورک", "کراکر", "چیپس", "بوریتو", "رامن",
+            "کوفته", "سس گوجه", "خردل", "چای", "لیموناد", "نوشابه", "آب میوه", "میلک‌شیک",
+            "شراب", "هات چاکلت", "قهوه", "آبجو", "آب", "بادام زمینی", "بادام", "گردو", "بادام هندی",
+            
+            // حیوانات
+            "سگ", "گربه", "اسب", "گاو", "خوک", "گوسفند", "بز", "شیر", "ببر", "فیل",
+            "پنگوئن", "خرس قطبی", "فک", "آهو", "شتر", "کانگورو", "کوالا", "راکون",
+            "سنجاب", "اسکانک", "روباه", "گرگ", "یوزپلنگ", "پلنگ", "پلنگ سیاه", "پاندا", "خفاش",
+            "نهنگ", "دلفین کوچولو", "اسب‌دریایی کوچولو", "ستاره دریایی", "ماهی", "ماهی قرمز", "اختاپوس",
+            "خرچنگ", "اسب دریایی", "مار", "مارمولک", "لاک‌پشت", "تمساح", "قورباغه", "مورچه", "زنبور عسل",
+            "پروانه", "عنکبوت", "عقاب", "دلفین", "کوسه", "طوطی", "گنجشک", "کلاغ",
+            "فلامینگو", "مرغ دریایی", "اردک", "غاز", "قو", "مرغ", "خروس", "مرغ خانگی", "جغد",
+            "کبوتر", "طاووس", "پنگوئن کوچک",
+            
+            // شخصیت‌های خیالی و افسانه‌ای
+            "ققنوس", "اژدها", "تک‌شاخ", "پری دریایی", "غول", "پاگنده", "گودزیلا", "کینگ کنگ",
+            "فرانکنشتاین", "دراکولا", "خون‌آشام", "زامبی", "روح", "غول کوهستان", "الف", "پری",
+            "جادوگر", "جادوگر زن", "شوالیه", "نینجا", "دزد دریایی", "گاوچران", "فرشته", "شیطان",
+            
+            // افراد و شخصیت‌های مشهور
+            "انیشتین", "موتسارت", "تیلور سویفت", "هری پاتر", "مرد عنکبوتی", "بتمن",
+            "سوپرمن", "میکی موس",
+            
+            // طبیعت و مکان‌ها
+            "خورشید", "اقیانوس", "دریاچه", "ساحل", "رودخانه", "کوه", "جنگل", "بیابان", "جزیره",
+            "جنگل", "تابستان", "زمستان", "بهار", "پاییز", "صبح", "شب", "ماه", "باد",
+            "طوفان", "برق", "رعد و برق", "غروب", "طلوع", "آسمان", "چمن", "گل", "درخت",
+            "سنگ", "شن", "خاک", "دانه", "ریشه", "شاخه", "جاده", "خیابان", "شهر", "روستا",
+            "شهرک", "کشور", "مزرعه", "باغ", "پارک", "باغ‌وحش", "زمین بازی", "استخر", "سیاره",
+            
+            // ساختمان‌ها و مکان‌ها
+            "خانه", "مدرسه", "بیمارستان", "کلیسا", "فروشگاه", "دفتر", "تئاتر", "موزه",
+            "کتابخانه", "استادیوم", "خانه", "اتاق", "در", "سقف", "دیوار", "کف", "پله",
+            "آسانسور", "گاراژ", "آشپزخانه", "حمام", "اتاق خواب", "باشگاه", "سالن", "آرایشگاه",
+            "دندانپزشک", "فرودگاه", "ایستگاه", "بزرگراه", "گوشه", "پارکینگ", "ورودی", "خروجی",
+            "دروازه", "حصار", "حیاط", "چمن", "برکه", "نیمکت", "تاب", "سرسره", "جعبه شن",
+            "رستوران", "کافه", "بار", "نانوایی", "مرکز خرید", "بازار", "مغازه", "بانک",
+            
+            // مبلمان و لوازم خانه
+            "صندلی", "میز", "تخت", "مبل", "میز تحریر", "کمد", "قفسه", "کشو", "فرش",
+            "پرده", "پتو", "ملافه", "بالش", "لامپ", "چراغ", "پنکه", "بخاری",
+            "کولر", "کنترل", "مایکروفر", "اجاق", "ماشین ظرفشویی", "سینک", "پیشخوان",
+            "کابینت", "یخچال", "فریزر", "لامپ", "شومینه", "مجسمه", "برج",
+            "قلعه", "هرم", "تونل",
+            
+            // اشیا و وسایل
+            "گوشی", "کامپیوتر", "تلویزیون", "دوربین", "لپ‌تاپ", "پرینتر", "هدفون",
+            "چکش", "پیچ‌گوشتی", "چاقو", "بیل", "قیچی", "ماشین", "کامیون", "اتوبوس",
+            "قطار", "هواپیما", "قایق", "موتور", "دست", "پا", "توپ", "سیاه‌چاله",
+            "یخچال", "فر", "نمک", "سیر", "گاز", "مداد", "سبد", "رنگ",
+            "باتری", "شارژر", "کابل", "سیم", "دوشاخه", "کلید", "دکمه", "صفحه",
+            "کیبورد", "موس", "بلندگو", "میکروفون", "رادیو", "ساعت زنگ‌دار", "تقویم",
+            "دفترچه", "خودکار", "پاک‌کن", "خط‌کش", "نوار چسب", "چسب", "منگنه", "کاغذ",
+            "پاکت", "تمبر", "نامه", "کارت", "عکس", "تصویر", "قاب", "پوستر",
+            "نقشه", "پرچم", "تاج", "انگشتر", "گردنبند", "دستبند", "ساعت", "عینک",
+            "کلاه", "کپ", "شال‌گردن", "کراوات", "کمربند", "کفش", "جوراب", "شمع", "گذرنامه",
+            "موشک", "کت", "چتر", "عینک آفتابی", "کوله‌پشتی", "چمدان", "بادکنک",
+            "بادبادک", "پازل", "تاس", "شطرنج", "طبل", "ویولن", "فلوت",
+            
+            // لباس
+            "پیراهن", "شلوار", "لباس", "دامن", "ژاکت", "پالتو", "شلوارک", "جین",
+            "تی‌شرت", "هودی", "صندل", "چکمه", "کفش ورزشی", "دمپایی", "لباس خواب",
+            "لباس شنا", "دستکش", "دستکش پشمی", "ماسک", "لباس مبدل", "یونیفرم", "پیش‌بند", "حوله",
+            "صابون", "شامپو", "مسواک", "خمیردندان", "شانه", "برس", "آینه", "عطر",
+            "رژلب", "آرایش", "چسب زخم", "دارو", "قرص", "ویتامین", "دستمال کاغذی", "پنبه",
+            "اسفنج", "سطل", "جارو", "جاروبرقی", "زباله", "بازیافت", "کیسه", "جعبه",
+            "ظرف", "شیشه", "قوطی", "بطری", "لیوان", "بشقاب", "کاسه", "قاشق", "چنگال",
+            "چاپ‌استیک", "نی", "دستمال", "سینی", "قابلمه", "تابه", "کتری", "توستر",
+            "مخلوط‌کن", "میکسر",
+            
+            // مکان‌های مشهور
+            "برج ایفل", "مجسمه آزادی", "بیگ بن", "دیوار چین",
+            "اهرام مصر", "تاج‌محل", "آبشار نیاگارا", "گراند کانیون", "میدان تایمز",
+            "کاخ سفید", "هالیوود", "دیزنی‌لند", "لاس‌وگاس",
+            
+            // شهرها
+            "لندن", "پاریس", "رم", "توکیو", "نیویورک", "بارسلونا", "آمستردام", "ونیز",
+            "آتن", "استانبول",
+            
+            // رنگ‌ها
+            "قرمز", "آبی", "سبز", "زرد", "نارنجی", "بنفش", "صورتی", "قهوه‌ای", "سیاه",
+            "سفید", "خاکستری",
+            
+            // خانواده و افراد
+            "نوزاد", "کودک", "نوجوان", "بزرگسال", "پسر", "دختر", "مرد", "زن", "پدر",
+            "مادر", "بابا", "مامان", "برادر", "خواهر", "پسر", "دختر", "عمو", "خاله",
+            "پسرعمو", "مادربزرگ", "پدربزرگ", "شوهر", "همسر",
+            
+            // اعضای بدن
+            "چشم", "گوش", "بینی", "دهان", "دندان", "لب", "سر", "مو", "صورت", "گردن",
+            "شانه", "بازو", "انگشت", "شست", "پا", "زانو", "انگشت پا", "سینه", "کمر",
+            "شکم", "پوست", "استخوان", "خون", "مغز",
+            
+            // اشکال
+            "دایره", "مربع", "مثلث", "الماس", "ستاره",
+            
+            // صفات فیزیکی
+            "داغ", "سرد", "گرم", "خنک", "خیس", "خشک", "تمیز", "کثیف", "سخت", "نرم", "تیز",
+            
+            // تعطیلات و رویدادها
+            "تولد", "کریسمس", "عید پاک", "هالووین", "روز شکرگزاری", "عروسی",
+            
+            // حیوانات بیشتر
+            "خرگوش", "موش", "موش صحرایی", "همستر", "خوکچه هندی", "الاغ", "گورخر", "زرافه",
+            "اسب‌آبی", "کرگدن", "گوریل", "میمون", "خرس", "گرگ", "تمساح", "حلزون",
+            "کرم", "کفشدوزک", "سنجاقک", "پشه", "سوسک", "کاترپیلار",
+            
+            // مشاغل و افراد
+            "پرستار", "آتش‌نشان", "افسر پلیس", "خلبان", "ملوان", "کشاورز", "پیشخدمت",
+            "پیشخدمت زن", "صندوقدار", "مکانیک", "بنا", "نقاش", "خواننده", "رقصنده",
+            "راننده", "پستچی", "نگهبان", "عکاس",
+            
+            // غذاهای بیشتر
+            "کیک هویج", "سوراخ دونات", "سیب‌زمینی سرخ‌کرده", "حلقه پیاز", "بال مرغ",
+            "کوفته قلقلی", "هات‌داگ", "کورن‌داگ", "پای سیب", "پای لیمو", "ژله", "مربا",
+            "کره بادام‌زمینی", "شربت", "سس", "سس", "ترشی", "زیتون", "سالاد خیار",
+            
+            // لوازم خانگی بیشتر
+            "گلدان", "جا شمعی", "قاب عکس", "کوسن", "قالیچه", "زیرانداز", "پادری",
+            "زنگ در", "صندوق پستی", "لانه پرنده", "گلدان", "آبپاش", "شیلنگ",
+            "نردبان", "جعبه ابزار", "چراغ قوه", "فانوس", "کبریت", "فندک",
+            
+            // لباس و اکسسوری بیشتر
+            "دمپایی", "دمپایی لاانگشتی", "کفش پاشنه‌بلند", "بارانی", "پانچو", "جلیقه", "کت‌شلوار",
+            "گیره کراوات", "کش مو", "هدبند", "گوشواره", "زنجیر گردن", "بند کیف",
+            
+            // پول و خرید
+            "پول", "دلار", "سکه", "پول نقد", "کیف پول", "کیف دستی", "عابربانک", "خرید",
+            
+            // ورزش و فعالیت‌ها
+            "فوتبال آمریکایی", "بسکتبال", "تنیس", "بیسبال", "فوتبال", "شنا", "دویدن",
+            "دوچرخه‌سواری", "اسکیت‌برد", "اسکیت غلتکی", "اسنوبرد", "موج‌سواری", "ماهیگیری",
+            "کمپینگ", "کوهنوردی", "نقاشی", "طراحی", "خواندن", "نوشتن", "آواز",
+            "رقص", "آشپزی", "گل", "تور", "بت", "جام", "مدال", "جایزه", "برنده",
+            "بازنده", "تیم", "بازیکن", "مربی", "طرفدار", "جمعیت",
+            
+            // سرگرمی و رسانه
+            "موسیقی", "اینستاگرام", "یوتیوب", "پل", "ساعت", "کلید", "پنجره", "کتاب",
+            "هدیه", "مهمانی", "رنگین‌کمان", "پر", "صدف", "سنگ", "برگ", "کنسرت",
+            "نمایش", "صحنه", "فیلم", "بازیگر", "بازیگر زن", "ویدیو", "بازی", "پازل",
+            "اسباب‌بازی", "عروسک", "خرس", "ربات", "بلوک", "لگو", "یویو", "فریزبی", "طناب",
+            "کارت", "بازی ویدیویی",
+            
+            // وسایل روزمره بیشتر
+            "کلاه حصیری", "کلاه بیسبال", "کلاه بافتنی", "کلاه آفتابی", "نشانگر", "جاکلیدی", "آهن‌ربا",
+            "برچسب", "نشان", "سنجاق", "کیسه زیپ‌دار", "کیسه ساندویچ", "ظرف ناهار",
+            "بطری آب", "فنجان قهوه", "فنجان چای", "نی نوشیدنی", "یخ", "قوری",
+            "نمک‌پاش", "آسیاب فلفل", "شکرپاش", "سبد نان", "کاسه میوه",
+            
+            // آلات موسیقی
+            "ترومپت", "ساکسیفون", "سازدهنی", "آکاردئون", "بانجو", "یوکللی", "چنگ",
+            "بلز", "دف", "ماراکاس", "بونگو", "سنج",
+            
+            // ابزارها
+            "آچار", "انبردست", "دریل", "اره", "میخ", "پیچ", "پیچ و مهره", "مهره",
+            "سنباده", "قلم‌مو", "غلتک رنگ", "متر", "تراز",
+            
+            // ایمنی و قانون
+            "پلیس", "آتش‌نشان", "آمبولانس", "ماشین آتش‌نشانی", "ماشین پلیس", "دستبند",
+            "آژیر", "زنگ هشدار", "زنگ", "سوت",
+            
+            // سلاح و نظامی
+            "شمشیر", "سپر", "کمان", "تیر", "تفنگ", "بمب", "سرباز", "ارتش", "کاپیتان",
+            "تانک", "جنگنده", "ناو جنگی", "هلیکوپتر", "یونیفرم", "کلاه ایمنی", "مدال",
+            
+            // وسایل آشپزخانه بیشتر
+            "تخته گوشت", "قوطی‌باز", "در بطری‌باز", "در بطری‌باز", "پوست‌کن", "رنده",
+            "همزن", "ملاقه", "کفگیر", "انبرک", "دستکش فر", "پیش‌بند", "مایع ظرفشویی",
+            "اسفنج", "دستمال ظرف", "زیر قابلمه", "وردنه", "قالب کلوچه", "صافی",
+            
+            // لوازم اداری و مدرسه
+            "جامدادی", "پاک‌کن", "مداد‌تراش", "ماژیک", "ماژیک", "وایت‌برد",
+            "تخته‌سیاه", "گچ", "ماشین‌حساب", "منگنه", "گیره کاغذ", "زونکن", "پوشه",
+            "کابینت فایل", "لامپ میز", "صندلی میز", "تابلو اعلانات", "پونز",
+            
+            // تجهیزات ورزشی
+            "دستکش بیسبال", "چوب بیسبال", "حلقه بسکتبال", "توپ فوتبال", "توپ تنیس",
+            "راکت تنیس", "چوب گلف", "توپ گلف", "توپ بولینگ", "پین بولینگ",
+            "چوب هاکی", "واشر هاکی", "توپ والیبال", "راکت بدمینتون", "شاتل",
+            
+            // جغرافیا
+            "آسیا", "آفریقا", "اروپا", "آمریکای شمالی", "آمریکای جنوبی", "استرالیا",
+            "جنوبگان", "اورست", "آتشفشان",
+            
+            // حمل‌ونقل و وسایل نقلیه
+            "دوچرخه", "سه‌چرخه", "اسکوتر", "مترو", "تاکسی", "آمبولانس", "ماشین آتش‌نشانی",
+            "ماشین زباله", "یدک‌کش", "ون", "جیپ", "کانورتیبل", "وانت",
+            "کاروان", "کمپر", "تریلر", "یات", "قایق بادبانی", "کانو", "کایاک", "قایق پارویی",
+            "جت‌اسکی", "بالون هوای گرم", "گلایدر", "چتر نجات",
+            
+            // باغبانی و فضای باز
+            "بیل", "شن‌کش", "کلنگ", "فرغون", "چمن‌زن", "آبپاش", "کباب‌پز",
+            "میز پیک‌نیک", "بند", "چادر", "کیسه خواب", "صندلی کمپینگ", "یخدان",
+            "ترموس", "قطب‌نما", "دوربین دوچشمی", "تلسکوپ"
+        ]
+    };
         let currentGameWord = "";
 
         // Firebase Configuration
-        // REPLACE THIS with your own Firebase config from https://console.firebase.google.com
         const firebaseConfig = {
             apiKey: "AIzaSyBSTuzqrJ0ik2CTfKq0GOc7lEVUYtxCX0E",
             authDomain: "spy-game-12f96.firebaseapp.com",
@@ -483,19 +982,216 @@
             console.error("Firebase initialization error:", error);
         }
 
+        // EmailJS Configuration
+        const EMAILJS_PUBLIC_KEY = 'qw_grGhV3it_4-RwE';
+        const EMAILJS_SERVICE_ID = 'service_f65c74d';
+        const EMAILJS_TEMPLATE_ID = 'template_gna5het';
+        
+        try {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (error) {
+            console.error("EmailJS initialization error:", error);
+        }
+
+        // Language System
+        // TEMPORARY: Force reset to English (remove after testing)
+        localStorage.setItem('language', 'en');
+        let currentLang = 'en';
+        const storedLang = localStorage.getItem('language');
+        if (storedLang === 'fa' || storedLang === 'en') {
+            currentLang = storedLang;
+        } else {
+            // If no valid language stored, default to English
+            localStorage.setItem('language', 'en');
+        }
+
+        const translations = {
+            en: {
+                mainTitle: 'Spy Game',
+                playerLabel: 'Number of Players:',
+                startBtn: 'Start Game',
+                howToPlayBtn: '📖 How to Play',
+                feedbackBtn: '💬 Feedback',
+                showWordText: 'Show me the word',
+                nextPlayerText: 'I saw',
+                playAgainText: 'Play Again',
+                spyMessage: "You're a spy!",
+                gamesPlayed: 'Games Played Worldwide:',
+                langButtonText: 'فارسی',
+                helpTitle: '📖 How to Play - Spy Game',
+                feedbackTitle: '💬 Send Feedback',
+                feedbackIntro: 'Have questions, suggestions, or ideas to improve the game? We\'d love to hear from you!',
+                nameLabel: 'Name (Optional)',
+                emailLabel: 'Email (Optional)',
+                messageLabel: 'Message *',
+                sendBtn: '📤 Send Feedback'
+            },
+            fa: {
+                mainTitle: 'بازی جاسوس',
+                playerLabel: 'تعداد بازیکنان:',
+                startBtn: 'شروع بازی',
+                howToPlayBtn: '📖 آموزش بازی',
+                feedbackBtn: '💬 بازخورد',
+                showWordText: 'کلمه را نشان بده',
+                nextPlayerText: 'دیدم',
+                playAgainText: 'بازی دوباره',
+                spyMessage: 'شما جاسوس هستید!',
+                gamesPlayed: 'بازی‌های انجام شده در سراسر جهان:',
+                langButtonText: 'English',
+                helpTitle: '📖 آموزش بازی - بازی جاسوس',
+                feedbackTitle: '💬 ارسال بازخورد',
+                feedbackIntro: 'سوال، پیشنهاد یا ایده‌ای برای بهبود بازی دارید؟ خوشحال می‌شویم نظرتان را بشنویم!',
+                nameLabel: 'نام (اختیاری)',
+                emailLabel: 'ایمیل (اختیاری)',
+                messageLabel: 'پیام *',
+                sendBtn: '📤 ارسال بازخورد'
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fa' : 'en';
+            localStorage.setItem('language', currentLang);
+            updateLanguage();
+            
+            // If game is in progress, update the word to the new language
+            if (players.length > 0 && currentWordIndex >= 0) {
+                const currentWords = wordsDatabase[currentLang];
+                currentGameWord = currentWords[currentWordIndex];
+                
+                // If word is currently displayed, update it
+                const wordDisplay = document.getElementById('wordDisplay');
+                if (wordDisplay && wordDisplay.textContent) {
+                    const t = translations[currentLang];
+                    
+                    // Check if currently showing spy message
+                    if (wordDisplay.textContent === translations['en'].spyMessage || wordDisplay.textContent === translations['fa'].spyMessage) {
+                        // Update to spy message in new language
+                        wordDisplay.textContent = t.spyMessage;
+                    } 
+                    // Otherwise, showing a word - update to translated word
+                    else {
+                        wordDisplay.textContent = currentGameWord;
+                    }
+                }
+            }
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLang];
+            document.body.className = currentLang === 'fa' ? 'rtl' : '';
+            
+            // Update all UI text
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('playerLabel').textContent = t.playerLabel;
+            document.getElementById('startGameButton').textContent = t.startBtn;
+            document.getElementById('howToPlayBtn').textContent = t.howToPlayBtn;
+            document.getElementById('feedbackBtn').textContent = t.feedbackBtn;
+            document.getElementById('showWordText').textContent = t.showWordText;
+            document.getElementById('nextPlayerText').textContent = t.nextPlayerText;
+            document.getElementById('playAgainText').textContent = t.playAgainText;
+            document.getElementById('langButtonText').textContent = t.langButtonText;
+            document.getElementById('helpTitle').textContent = t.helpTitle;
+            document.getElementById('feedbackTitle').textContent = t.feedbackTitle;
+            document.getElementById('feedbackIntro').textContent = t.feedbackIntro;
+            document.getElementById('nameLabel').textContent = t.nameLabel;
+            document.getElementById('emailLabel').textContent = t.emailLabel;
+            document.getElementById('messageLabel').textContent = t.messageLabel;
+            document.getElementById('sendBtn').textContent = t.sendBtn;
+            
+            // Update help content
+            updateHelpContent();
+            
+            // Update counter
+            updateGlobalCounter();
+        }
+
+        function updateHelpContent() {
+            const helpContent = document.getElementById('helpContent');
+            
+            if (currentLang === 'en') {
+                helpContent.innerHTML = `
+                    <h3>🎯 Game Overview</h3>
+                    <p>Spy Game is a social deduction game for 3 or more players. One or more players are randomly selected as spies, while others see a secret word.</p>
+                    
+                    <h3>📋 How to Play</h3>
+                    <ul>
+                        <li><strong>Setup:</strong> Enter the number of players (minimum 3) and tap "Start Game"</li>
+                        <li><strong>Secret Reveal:</strong> Each player takes turns viewing their role:
+                            <ul>
+                                <li>Most players will see a secret word</li>
+                                <li>Spies will see "You're a spy!"</li>
+                            </ul>
+                        </li>
+                        <li><strong>Discussion:</strong> Players take turns giving clues about the word without saying it directly</li>
+                        <li><strong>The Goal:</strong>
+                            <ul>
+                                <li><strong>Regular Players:</strong> Figure out who the spy is</li>
+                                <li><strong>Spies:</strong> Try to blend in and guess the secret word</li>
+                            </ul>
+                        </li>
+                        <li><strong>Voting:</strong> After discussion, players vote to eliminate who they think is the spy</li>
+                    </ul>
+                    
+                    <h3>💡 Tips</h3>
+                    <ul>
+                        <li><strong>For Regular Players:</strong> Give clues that prove you know the word, but don't make it too obvious for the spy</li>
+                        <li><strong>For Spies:</strong> Listen carefully to clues and try to guess the word category to blend in</li>
+                        <li><strong>Keep it Subtle:</strong> Don't say the word directly or you'll help the spy!</li>
+                    </ul>
+                    
+                    <h3>🎲 Spy Count</h3>
+                    <p>The number of spies is randomly determined each game, typically around 25% of players, but can range from 10% to 90% for unpredictability!</p>
+                `;
+            } else {
+                helpContent.innerHTML = `
+                    <h3>🎯 معرفی بازی</h3>
+                    <p>بازی جاسوس یک بازی استنتاج اجتماعی برای ۳ یا بیشتر بازیکن است. یک یا چند بازیکن به صورت تصادفی به عنوان جاسوس انتخاب می‌شوند، در حالی که بقیه یک کلمه مخفی می‌بینند.</p>
+                    
+                    <h3>📋 نحوه بازی</h3>
+                    <ul>
+                        <li><strong>راه‌اندازی:</strong> تعداد بازیکنان را وارد کنید (حداقل ۳ نفر) و روی "شروع بازی" ضربه بزنید</li>
+                        <li><strong>افشای مخفیانه:</strong> هر بازیکن نوبتی نقش خود را مشاهده می‌کند:
+                            <ul>
+                                <li>اکثر بازیکنان یک کلمه مخفی خواهند دید</li>
+                                <li>جاسوس‌ها "شما جاسوس هستید!" را خواهند دید</li>
+                            </ul>
+                        </li>
+                        <li><strong>بحث:</strong> بازیکنان نوبتی در مورد کلمه سرنخ می‌دهند بدون اینکه آن را مستقیماً بگویند</li>
+                        <li><strong>هدف:</strong>
+                            <ul>
+                                <li><strong>بازیکنان عادی:</strong> بفهمید جاسوس کیست</li>
+                                <li><strong>جاسوس‌ها:</strong> سعی کنید با دیگران هماهنگ شوید و کلمه مخفی را حدس بزنید</li>
+                            </ul>
+                        </li>
+                        <li><strong>رای‌گیری:</strong> بعد از بحث، بازیکنان رای می‌دهند که فکر می‌کنند جاسوس کیست</li>
+                    </ul>
+                    
+                    <h3>💡 نکات</h3>
+                    <ul>
+                        <li><strong>برای بازیکنان عادی:</strong> سرنخ‌هایی بدهید که ثابت کند کلمه را می‌دانید، اما برای جاسوس خیلی واضح نباشد</li>
+                        <li><strong>برای جاسوس‌ها:</strong> با دقت به سرنخ‌ها گوش دهید و سعی کنید دسته کلمه را حدس بزنید تا با دیگران هماهنگ شوید</li>
+                        <li><strong>ظریف باشید:</strong> کلمه را مستقیماً نگویید وگرنه به جاسوس کمک می‌کنید!</li>
+                    </ul>
+                    
+                    <h3>🎲 تعداد جاسوس‌ها</h3>
+                    <p>تعداد جاسوس‌ها در هر بازی به صورت تصادفی تعیین می‌شود، معمولاً حدود ۲۵٪ بازیکنان، اما می‌تواند از ۱۰٪ تا ۹۰٪ متغیر باشد تا غیرقابل پیش‌بینی باشد!</p>
+                `;
+            }
+        }
+
         // Global counter using Firebase
         function updateGlobalCounter() {
             if (!database) {
-                document.getElementById('gameCounter').textContent = 'Games Played Worldwide: Setup Required';
-                console.log('Please configure Firebase - see instructions in console');
-                console.log('Visit: https://console.firebase.google.com to create a free project');
+                const t = translations[currentLang];
+                document.getElementById('gameCounter').textContent = t.gamesPlayed + ' ' + (currentLang === 'en' ? 'Setup Required' : 'نیاز به تنظیم');
                 return;
             }
 
             const counterRef = database.ref('spygameCounter');
             counterRef.on('value', (snapshot) => {
                 const count = snapshot.val() || 0;
-                document.getElementById('gameCounter').textContent = `Games Played Worldwide: ${count.toLocaleString()}`;
+                const t = translations[currentLang];
+                document.getElementById('gameCounter').textContent = t.gamesPlayed + ' ' + count.toLocaleString(currentLang === 'fa' ? 'fa-IR' : 'en-US');
             });
         }
 
@@ -508,8 +1204,125 @@
             });
         }
 
-        // Load counter when page loads
-        window.addEventListener('load', updateGlobalCounter);
+        // Load counter and language when page loads
+        window.addEventListener('load', () => {
+            updateLanguage();
+            updateGlobalCounter();
+        });
+
+        // Modal Functions
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        function showFeedback() {
+            document.getElementById('feedbackModal').classList.remove('hidden');
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('feedbackStatus').classList.add('hidden');
+            }, 300);
+        }
+
+        function submitFeedback(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('feedbackName').value.trim();
+            const email = document.getElementById('feedbackEmail').value.trim();
+            const message = document.getElementById('feedbackMessage').value.trim();
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+            const statusEl = document.getElementById('feedbackStatus');
+            
+            if (!message) {
+                statusEl.textContent = currentLang === 'en' ? '⚠️ Please enter a message' : '⚠️ لطفاً پیامی وارد کنید';
+                statusEl.style.background = '#fff3cd';
+                statusEl.style.color = '#856404';
+                statusEl.classList.remove('hidden');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            const sendingText = currentLang === 'en' ? '📤 Sending...' : '📤 در حال ارسال...';
+            submitBtn.querySelector('span').textContent = sendingText;
+            
+            if (database) {
+                const counterRef = database.ref('spygameFeedbackCounter');
+                counterRef.transaction((currentValue) => {
+                    return (currentValue || 0) + 1;
+                }).then((result) => {
+                    const feedbackNumber = result.snapshot.val();
+                    
+                    const feedbackRef = database.ref('spygameFeedback');
+                    return feedbackRef.push({
+                        number: feedbackNumber,
+                        name: name || 'Anonymous',
+                        email: email || 'Not provided',
+                        message: message,
+                        language: currentLang,
+                        timestamp: new Date().toISOString(),
+                        date: new Date().toLocaleString()
+                    }).then(() => feedbackNumber);
+                })
+                .then((feedbackNumber) => {
+                    if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                            feedback_number: feedbackNumber,
+                            from_name: name || 'Anonymous',
+                            from_email: email || 'Not provided',
+                            message: message + '\n\nLanguage: ' + currentLang + '\n\nGame: Spy Game',
+                            to_email: 'contact.ehm@gmail.com'
+                        }).catch((error) => {
+                            console.error('EmailJS error:', error);
+                        });
+                    }
+                    
+                    statusEl.textContent = currentLang === 'en' ? '✅ Thank you! Your feedback has been sent successfully!' : '✅ متشکریم! بازخورد شما با موفقیت ارسال شد!';
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.classList.remove('hidden');
+                    
+                    document.getElementById('feedbackForm').reset();
+                    
+                    setTimeout(() => {
+                        closeFeedback();
+                    }, 2000);
+                })
+                .catch((error) => {
+                    console.error('Error submitting feedback:', error);
+                    statusEl.textContent = currentLang === 'en' ? '❌ Error sending feedback. Please try again.' : '❌ خطا در ارسال بازخورد. لطفاً دوباره تلاش کنید.';
+                    statusEl.style.background = '#f8d7da';
+                    statusEl.style.color = '#721c24';
+                    statusEl.classList.remove('hidden');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.querySelector('span').textContent = translations[currentLang].sendBtn;
+                });
+            } else {
+                statusEl.textContent = currentLang === 'en' ? '❌ Firebase not configured.' : '❌ Firebase پیکربندی نشده است.';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.querySelector('span').textContent = translations[currentLang].sendBtn;
+            }
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('helpModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeHelp();
+        });
+        
+        document.getElementById('feedbackModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeFeedback();
+        });
 
         document.getElementById('startGameButton').addEventListener('click', startGame);
         document.getElementById('showWordButton').addEventListener('click', showWord);
@@ -517,26 +1330,29 @@
         document.getElementById('playAgainButton').addEventListener('click', playAgain);
 
         function getRandomSpyCount(numPlayers) {
-            // Generate a weighted random percentage mostly around 25%, but can go up to 90%
-            // Use average of multiple random numbers to create normal distribution
-            let sum = 0;
-            const samples = 3;
-            for (let i = 0; i < samples; i++) {
-                sum += Math.random();
+            // More balanced spy count with fewer spies for low player counts
+            // Aim for approximately 20-30% spies with some randomness
+            
+            let numSpies;
+            
+            if (numPlayers <= 4) {
+                // 3-4 players: Always 1 spy (25-33%)
+                numSpies = 1;
+            } else if (numPlayers <= 6) {
+                // 5-6 players: 1-2 spies (16-33%)
+                numSpies = Math.random() < 0.7 ? 1 : 2;
+            } else if (numPlayers <= 8) {
+                // 7-8 players: 1-2 spies, mostly 2 (12-28%)
+                numSpies = Math.random() < 0.3 ? 1 : 2;
+            } else if (numPlayers <= 10) {
+                // 9-10 players: 2-3 spies (20-33%)
+                numSpies = Math.random() < 0.5 ? 2 : 3;
+            } else {
+                // 11+ players: Scale around 25% with slight randomness
+                const baseSpies = Math.floor(numPlayers * 0.25);
+                const variance = Math.random() < 0.5 ? 0 : (Math.random() < 0.5 ? -1 : 1);
+                numSpies = Math.max(2, baseSpies + variance);
             }
-            let avgRandom = sum / samples; // This tends towards 0.5 (50%)
-            
-            // Scale and shift to center around 25% with range from 10% to 90%
-            // Formula: shift avgRandom (0-1) to center at 25% with wider range
-            let spyPercentage = 0.10 + (avgRandom * 0.80); // 10% to 90%
-            
-            // Bias towards 25% by blending with target
-            spyPercentage = (spyPercentage * 0.7) + (0.25 * 0.3); // 70% random, 30% fixed at 25%
-            
-            // Calculate number of spies, minimum 1
-            let numSpies = Math.round(numPlayers * spyPercentage);
-            numSpies = Math.max(1, numSpies); // At least 1 spy
-            numSpies = Math.min(numSpies, Math.floor(numPlayers * 0.9)); // Max 90% of players
             
             return numSpies;
         }
@@ -550,18 +1366,52 @@
 
             players = [];
             for (let i = 0; i < numPlayers; i++) {
-                players.push({ isSpy: false });
+                players.push({ isSpy: false, index: i });
             }
 
+            // Weighted spy selection - early players have lower chance, later players have higher chance
+            // Create weights using quadratic function for more dramatic difference
+            let weights = [];
+            for (let i = 0; i < numPlayers; i++) {
+                // Quadratic weight increase: (position + 1)^2
+                // First player = 1, second = 4, third = 9, last (n) = n^2
+                // This creates much more dramatic weighting than linear
+                weights.push((i + 1) * (i + 1));
+            }
+            
+            let totalWeight = weights.reduce((sum, w) => sum + w, 0);
             let spyIndices = [];
+            
             while (spyIndices.length < numSpies) {
-                const randomIndex = Math.floor(Math.random() * numPlayers);
-                if (!spyIndices.includes(randomIndex)) {
-                    spyIndices.push(randomIndex);
-                    players[randomIndex].isSpy = true;
+                // Pick a random number between 0 and totalWeight
+                let randomWeight = Math.random() * totalWeight;
+                let cumulativeWeight = 0;
+                
+                for (let i = 0; i < numPlayers; i++) {
+                    if (spyIndices.includes(i)) continue; // Skip already selected spies
+                    
+                    cumulativeWeight += weights[i];
+                    if (randomWeight <= cumulativeWeight) {
+                        spyIndices.push(i);
+                        players[i].isSpy = true;
+                        // Recalculate totalWeight after removing this player's weight
+                        totalWeight -= weights[i];
+                        break;
+                    }
                 }
             }
-            currentGameWord = words[Math.floor(Math.random() * words.length)];
+            
+            // Select word from the current language and store its index
+            const currentWords = wordsDatabase[currentLang];
+            if (!currentWords || currentWords.length === 0) {
+                console.error('No words available for language:', currentLang);
+                // Fallback to English if there's an issue
+                currentWordIndex = 0;
+                currentGameWord = wordsDatabase['en'][0];
+            } else {
+                currentWordIndex = Math.floor(Math.random() * currentWords.length);
+                currentGameWord = currentWords[currentWordIndex];
+            }
 
             document.getElementById('setup').style.display = 'none';
             document.getElementById('game').style.display = 'block';
@@ -572,9 +1422,10 @@
         function showWord() {
             const wordDisplay = document.getElementById('wordDisplay');
             const currentPlayer = players[currentPlayerIndex];
+            const t = translations[currentLang];
 
             if (currentPlayer.isSpy) {
-                wordDisplay.textContent = "You're a spy!";
+                wordDisplay.textContent = t.spyMessage;
             } else {
                 wordDisplay.textContent = currentGameWord;
             }
